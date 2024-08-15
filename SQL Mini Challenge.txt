@@ -1,0 +1,177 @@
+SQL Portfolio: Data Analysis and Management
+
+ Project: Sales Data Analysis with SQL 
+
+Project Overview:
+This project involves analyzing a sales dataset to extract insights on product performance, sales trends, and customer behavior. The dataset includes information on sales transactions, customers, and products.
+
+Sample Dataset:
+Below is a small dataset used for the analysis. The data is split across three tables: `sales`, `customers`, and `products`.
+
+1. `sales` Table:
+| sale_id | product_id | customer_id | sale_date | quantity | total_amount |
+|---------|------------|-------------|-----------|----------|--------------|
+| 1       | 101        | 1001        | 2024-01-10| 2        | 40.00        |
+| 2       | 102        | 1002        | 2024-01-11| 1        | 20.00        |
+| 3       | 101        | 1003        | 2024-01-12| 3        | 60.00        |
+| 4       | 103        | 1002        | 2024-01-13| 1        | 30.00        |
+| 5       | 104        | 1001        | 2024-01-14| 2        | 50.00        |
+
+ 2. `customers` Table:
+| customer_id | customer_name | country     |
+|-------------|---------------|-------------------|
+| 1001        | Alice Smith  | USA            |
+| 1002        | Bob Johnson  | Canada     | 
+| 1003        | Carol Davis   | UK              |
+
+ 3. `products` Table:
+| product_id | product_name | category    | price |
+|------------|--------------|-------------|-------|
+| 101        | Laptop       | Electronics | 20.00 |
+| 102        | Mouse        | Accessories | 20.00 |
+| 103        | Keyboard     | Accessories | 30.00 |
+| 104        | Monitor      | Electronics | 25.00 |
+
+SQL Queries and Analysis:
+
+1. Total Sales per Product
+   This query calculates the total revenue generated for each product.
+
+
+   SELECT 
+       p.product_name,
+       SUM(s.total_amount) AS total_revenue
+   FROM 
+       sales s
+   JOIN 
+       products p ON s.product_id = p.product_id
+   GROUP BY 
+       p.product_name
+   ORDER BY 
+       total_revenue DESC;
+
+
+2)Customer Purchase Frequency:
+This query identifies the number of times each customer has made a purchase.
+
+SELECT 
+    c.customer_name,
+    COUNT(s.sale_id) AS purchase_count
+FROM 
+    sales s
+JOIN 
+    customers c ON s.customer_id = c.customer_id
+GROUP BY 
+    c.customer_name
+ORDER BY 
+    purchase_count DESC;
+
+
+
+3)Sales Trend Over Time:
+This query shows the total sales per day.
+
+SELECT 
+    sale_date,
+    SUM(total_amount) AS daily_sales
+FROM 
+    sales
+GROUP BY 
+    sale_date
+ORDER BY 
+    sale_date;
+
+
+4)Top-Selling Categories:
+This query identifies the product categories generating the most revenue.
+
+SELECT 
+    p.category,
+    SUM(s.total_amount) AS category_revenue
+FROM 
+    sales s
+JOIN 
+    products p ON s.product_id = p.product_id
+GROUP BY 
+    p.category
+ORDER BY 
+    category_revenue DESC;
+
+
+5)Customer Location Insights:
+This query breaks down sales by country.
+
+SELECT 
+    c.country,
+    COUNT(s.sale_id) AS total_sales,
+    SUM(s.total_amount) AS revenue
+FROM 
+    sales s
+JOIN 
+    customers c ON s.customer_id = c.customer_id
+GROUP BY 
+    c.country
+ORDER BY 
+    revenue DESC;
+
+6)Subquery to Find Top-Spending Customer:
+   This query identifies the customer who has spent the most overall.
+
+
+   SELECT 
+       customer_name, 
+       total_spent
+   FROM 
+       customers c
+   JOIN 
+       (
+           SELECT 
+               customer_id, 
+               SUM(total_amount) AS total_spent
+           FROM 
+               sales
+           GROUP BY 
+               customer_id
+       ) AS customer_totals
+   ON 
+       c.customer_id = customer_totals.customer_id
+   ORDER BY 
+       total_spent DESC
+   LIMIT 1;
+
+
+7)CTE for Monthly Sales Analysis:
+This query uses a CTE to calculate monthly sales and then provides insights into which months have the highest revenue.
+
+WITH monthly_sales AS (
+    SELECT 
+        DATE_TRUNC('month', sale_date) AS month,
+        SUM(total_amount) AS total_sales
+    FROM 
+        sales
+    GROUP BY 
+        month
+)
+SELECT 
+    month,
+    total_sales
+FROM 
+    monthly_sales
+ORDER BY 
+    total_sales DESC;
+
+8)Creating a View for Product Performance:
+A view to simplify future queries for analyzing product performance.
+
+CREATE VIEW product_performance AS
+SELECT 
+    p.product_name,
+    p.category,
+    SUM(s.total_amount) AS total_revenue,
+    SUM(s.quantity) AS total_units_sold
+FROM 
+    sales s
+JOIN 
+    products p ON s.product_id = p.product_id
+GROUP BY 
+    p.product_name, p.category;
